@@ -1,4 +1,4 @@
-const axios = require('axios');
+// const axios = require('axios');
 const FoodItem = require('../models/FoodItem');
 
 // Manual Entry of Food Item
@@ -11,7 +11,8 @@ exports.addFoodItem = async (req, res) => {
       category,
       manufacturingDate,
       expiryDate,
-      userId: req.user, // userId from JWT token
+      username: req.user.username,
+      userId: req.user._id,
     });
     await newFoodItem.save();
     res.status(201).json(newFoodItem);
@@ -20,43 +21,68 @@ exports.addFoodItem = async (req, res) => {
   }
 };
 
+
 // Barcode Scanning
-exports.addFoodItemByBarcode = async (req, res) => {
-  const { barcode } = req.body;
+// exports.addFoodItemByBarcode = async (req, res) => {
+//   const { barcode } = req.body;
 
-  if (!barcode) {
-    return res.status(400).json({ message: 'Barcode is required' });
-  }
+//   if (!barcode) {
+//     return res.status(400).json({ message: 'Barcode is required' });
+//   }
 
+//   try {
+//     const response = await axios.get(`https://api.eandb.com/v1/lookup/${barcode}`, {
+//       headers: {
+//         Authorization: `Bearer ${process.env.BARCODE_API_KEY}`, // Replace with your actual API key
+//       },
+//     });
+
+//     const { name, category, manufacturingDate, expiryDate } = response.data; // Assuming API returns these fields
+
+//     const newFoodItem = new FoodItem({
+//       name,
+//       category,
+//       manufacturingDate,
+//       expiryDate,
+//       userId: req.user,
+//     });
+//     await newFoodItem.save();
+
+//     res.status(201).json(newFoodItem);
+//   } catch (error) {
+//     console.error('Error fetching barcode data:', error);
+//     res.status(500).json({ message: 'Error scanning barcode or fetching product data', error });
+//   }
+// };
+
+// Get All Food Items for a User
+// Get All Food Items for All Users
+exports.getFoodItems = async (req, res) => {
   try {
-    const response = await axios.get(`https://api.eandb.com/v1/lookup/${barcode}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.BARCODE_API_KEY}`, // Replace with your actual API key
-      },
-    });
+    // Fetch all food items without filtering by userId
+    const foodItems = await FoodItem.find().sort({ expiryDate: 1 }); // Sort by expiration date
 
-    const { name, category, manufacturingDate, expiryDate } = response.data; // Assuming API returns these fields
+    if (!foodItems || foodItems.length === 0) {
+      return res.status(404).json({ message: 'No food items found' });
+    }
 
-    const newFoodItem = new FoodItem({
-      name,
-      category,
-      manufacturingDate,
-      expiryDate,
-      userId: req.user,
-    });
-    await newFoodItem.save();
-
-    res.status(201).json(newFoodItem);
+    res.status(200).json(foodItems);
   } catch (error) {
-    console.error('Error fetching barcode data:', error);
-    res.status(500).json({ message: 'Error scanning barcode or fetching product data', error });
+    res.status(500).json({ message: 'Error fetching food items', error });
   }
 };
 
-// Get All Food Items for a User
-exports.getFoodItems = async (req, res) => {
+
+// Get Food Items by userId
+exports.getFoodItemsByUserId = async (req, res) => {
   try {
-    const foodItems = await FoodItem.find({ userId: req.user }).sort({ expiryDate: 1 }); // Sort by expiration date
+    const userId = req.params.userId;
+    const foodItems = await FoodItem.find({ userId }).sort({ expiryDate: 1 });
+
+    if (!foodItems || foodItems.length === 0) {
+      return res.status(404).json({ message: 'No food items found for this user' });
+    }
+
     res.status(200).json(foodItems);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching food items', error });

@@ -1,16 +1,19 @@
 const express = require('express');
-const { addFoodItem, addFoodItemByBarcode, getFoodItems } = require('../controllers/foodController');
-const protect = require('../middlewares/authMiddleware.js'); // Authentication middleware
+const { getFoodItemsByUserId, addFoodItem, addFoodItemByBarcode, getFoodItems } = require('../controllers/foodItemController');
+const { isAuthenticated } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Manual Entry of Food Item
-router.post('/', protect, addFoodItem);
+router.post('/add-food-items', isAuthenticated, addFoodItem);
 
 // Barcode Scanning
-router.post('/barcode', protect, addFoodItemByBarcode);
+// router.post('/barcode', protect, addFoodItemByBarcode);
 
 // Get All Food Items for a User
-router.get('/', protect, getFoodItems);
+router.get('/get-food-items', getFoodItems);
+
+// Get Food Items by userId
+router.get('/get-food-items/:userId', getFoodItemsByUserId);
 
 module.exports = router;
