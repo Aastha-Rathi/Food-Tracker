@@ -11,7 +11,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
 const forgotpasswordRoutes = require('./routes/forgotpasswordRoutes');
 const imageRoutes = require('./routes/imageRoutes');
-// const chatRoutes = require('./routes/chatRoutes');
+const foodItemRoutes = require('./routes/foodItemRoutes');
 
 
 const app = express();
@@ -40,6 +40,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api/auth', authRoutes);
 app.use('/api', forgotpasswordRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api', foodItemRoutes);
 
 
 app.use((err, req, res, next) => {
