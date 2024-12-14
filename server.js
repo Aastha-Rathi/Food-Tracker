@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require("path");
 const { multerErrorHandler } = require("./utils/multer");
 const bodyParser = require('body-parser');
+const cron = require('node-cron');
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
@@ -32,8 +33,13 @@ connectDB();
 // app.use(bodyParser.json());
 
 app.use(express.json());
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
+cron.schedule('0 0 * * *', () => {
+  console.log('Running scheduled task to check for expiring food items..');
+  foodItemController.checkExpiringFoodItems();
+});
 
 
 // endpoints
